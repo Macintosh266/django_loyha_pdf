@@ -94,6 +94,9 @@ def PdfDownload(request, pk):
     pdf.cell(0, 10, f"Holat: {'Aktiv' if car.is_bool else 'Noaktiv'}", ln=True)
     pdf.cell(0, 10, f"Ko'rishlar: {car.views}", ln=True)
     
+    site_url = "http://127.0.0.1:8000/" 
+    pdf.cell(0, 10, f"Sayt manzili: {site_url}", ln=True, link=site_url)
+    
 
     pdf_output = pdf.output(dest='S').encode('latin1')
 
