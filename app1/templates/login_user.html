@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="mg-auto w-50 mx-auto" style="">
+    <form class="mg-auto" method="post" action="">
+        <h1 class="text-center">Login</h1>
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit" class="btn btn-primary w-100">Kirish</button>
+    </form>
+
+</div>
+
+</body>
+</html>
