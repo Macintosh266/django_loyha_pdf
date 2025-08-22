@@ -1,7 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect, HttpResponse, get_object_or_404, redirect
 from django.views.generic import *
 from django.urls import reverse_lazy
-from pyexpat.errors import messages
 from .models import *
 from .forms import *
 from fpdf import FPDF
@@ -9,6 +8,7 @@ from io import BytesIO
 import requests
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 
@@ -40,20 +40,23 @@ def Menu(request):
 
     return render(request, 'index.html', context=context)
 
-
-class CreateCar(CreateView):
+class CreateCar(LoginRequiredMixin,CreateView):
+    login_url='login_user'
     model=Cars
     form_class=CarsForm
     template_name='create_car.html'
     success_url=reverse_lazy('home')
 
-class CreateCarModel(CreateView):
+
+class CreateCarModel(LoginRequiredMixin,CreateView):
+    login_url='login_user'
     model=CarModel
     form_class=CarModelForm
     template_name='create_carmodel.html'
     success_url=reverse_lazy('home')
 
-class UpdateCar(UpdateView):
+class UpdateCar(LoginRequiredMixin,UpdateView):
+    login_url='login_user'
     model=Cars
     form_class=CarsForm
     template_name='update_car.html'
@@ -62,8 +65,8 @@ class UpdateCar(UpdateView):
 
 
 
-
-class DetailCar(DetailView):
+class DetailCar(LoginRequiredMixin,DetailView):
+    login_url='login_user'
     model=Cars
     template_name='detail_car.html'
     pk_url_kwarg = 'pk'
@@ -75,7 +78,8 @@ class DetailCar(DetailView):
         context['car'] = Cars.objects.get(pk=self.kwargs['pk'])
 
         return context
-    
+
+@login_required(login_url='login_user')
 def PdfDownload(request, pk):
     car = get_object_or_404(Cars, pk=pk)
     
@@ -105,13 +109,16 @@ def PdfDownload(request, pk):
 
     pdf.ln(10)
 
-    # QR kodni qo‘shish
     qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?data={site_url}&size=100x100"
     qr_response = requests.get(qr_code_url)
+
+    qr_response = requests.get(qr_code_url) 
     qr_img = BytesIO(qr_response.content)
+    qr_img.name = 'qr.png'
     pdf.image(qr_img, x=10, y=pdf.get_y(), w=30, h=30)
 
     pdf_output = pdf.output(dest='S').encode('latin1')
+
 
     response = HttpResponse(pdf_output, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="car_{pk}.pdf"'
